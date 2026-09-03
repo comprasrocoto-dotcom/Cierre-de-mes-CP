@@ -869,11 +869,20 @@ function mesAnterior(mes){
    Unidad='Und',    factor F  -> kg = cantidad * F / 1000   (F = gramos por unidad)
    Verificado contra datos reales: SUB059 (Gramos,1000): 11.000g -> 11kg.
    SUB290 (Und,50): 150 und -> 7.5kg. */
-function kgFactor(codigo){
+function kgFactor(codigo, articulo){
   if(codigo==null || codigo==='') return null; // evita que "sin código" haga match contra filas de Base_Conversion con Código en blanco
-  const bc = DATA.baseConv.find(b=>b.codigo===codigo);
-  if(!bc) return null;
-  return parseUnitFactor(bc);
+  // Puede haber más de una fila en Base_Conversion con el mismo Código (código reutilizado
+  // para más de un producto, visto p.ej. en SUB257 = "BOCADITOS DE CANGREJO Y QUESO" (Und, 50)
+  // Y TAMBIÉN "FODGE CUBIERTA" (Gramos, 1000)). Si hay varias, se desambigua por nombre de
+  // artículo; si ninguna coincide por nombre (o no se pasó articulo), se usa la primera como
+  // antes para no romper el caso normal de código único.
+  const candidatos = DATA.baseConv.filter(b=>b.codigo===codigo);
+  if(!candidatos.length) return null;
+  if(candidatos.length>1 && articulo){
+    const porNombre = candidatos.find(b=>normArt(b.articulo)===normArt(articulo));
+    if(porNombre) return parseUnitFactor(porNombre);
+  }
+  return parseUnitFactor(candidatos[0]);
 }
 function parseUnitFactor(bc){
   const u = norm(bc.unidad);
@@ -884,7 +893,7 @@ function parseUnitFactor(bc){
 /* Para artículos sin código (no pasan por Fabricación): Base_Conversion tiene ~10 filas
    con Código en blanco pero Artículo y factor sí llenos — se cruzan por nombre. */
 function kgFactorFor(codigo, articulo){
-  const porCodigo = kgFactor(codigo);
+  const porCodigo = kgFactor(codigo, articulo);
   if(porCodigo) return porCodigo;
   if(!articulo) return null;
   const bc = DATA.baseConv.find(b => (b.codigo==null || b.codigo==='') && normArt(b.articulo)===normArt(articulo));
