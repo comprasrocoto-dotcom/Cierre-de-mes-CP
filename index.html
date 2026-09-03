@@ -204,15 +204,6 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       <h1>Cierre de mes<br><em>CP</em></h1>
     </div>
     <div class="controls">
-      <div class="fuente-indicator" id="fuenteIndicator" hidden>
-        <span class="fuente-dot" id="fuenteDot"></span>
-        <div>
-          <div id="fuenteLabel">Fuente: Base de informes</div>
-          <div id="fuenteEstadoMsg" class="fuente-msg"></div>
-        </div>
-      </div>
-      <button class="btn" id="btnActualizar" type="button" hidden>↻ Actualizar datos</button>
-      <button class="btn" id="btnToggleManual" type="button" hidden style="font-size:11px;">Carga manual de emergencia</button>
       <label class="btn file-btn" id="fileBtnLabel">Subir XLSX
         <input type="file" id="fileInput" accept=".xlsx,.xls">
       </label>
@@ -639,28 +630,15 @@ async function cargarDesdeGoogleSheets(){
   }
 }
 
-// Botón "Actualizar datos": vuelve a consultar la hoja en vivo manualmente.
-const btnActualizar = document.getElementById('btnActualizar');
-if(btnActualizar){
-  btnActualizar.addEventListener('click', () => cargarDesdeGoogleSheets());
-}
-
-// Toggle de "Carga manual de emergencia": el <label id="fileBtnLabel"> original
-// (con su <input type=file> y su listener) queda intacto; esto solo lo muestra/oculta.
-const btnToggleManual = document.getElementById('btnToggleManual');
+// El <label id="fileBtnLabel"> con su <input type=file> y su listener queda intacto
+// y siempre visible: es el respaldo manual si la carga automática de Base de
+// informes fallara. (El botón "Actualizar datos" y el indicador de fuente ya no
+// se muestran en la interfaz; la carga automática y su reintento por timeout
+// siguen funcionando igual desde cargarDesdeGoogleSheets()/iniciarApp().)
 const fileBtnLabel = document.getElementById('fileBtnLabel');
-if(btnToggleManual && fileBtnLabel){
-  btnToggleManual.addEventListener('click', () => {
-    fileBtnLabel.hidden = !fileBtnLabel.hidden;
-  });
-}
 
 function iniciarApp(){
   if(driveDisponible()){
-    document.getElementById('fuenteIndicator')?.removeAttribute('hidden');
-    document.getElementById('btnActualizar')?.removeAttribute('hidden');
-    document.getElementById('btnToggleManual')?.removeAttribute('hidden');
-    if(fileBtnLabel) fileBtnLabel.hidden = true;
     cargarDesdeGoogleSheets();
   }
   // Si no está configurado, no se toca nada: mismo comportamiento de hoy, a
