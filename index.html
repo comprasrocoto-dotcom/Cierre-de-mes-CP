@@ -496,14 +496,22 @@ document.getElementById('printBtn').addEventListener('click', ()=> window.print(
    esas cinco funciones sin cambiarles una sola línea: cero duplicación de
    lógica, máxima fidelidad con la carga manual.
 
-   Costos_Compartidos_CP es la única excepción: ese backend ya la entrega
-   limpia como {Mes, Concepto, Valor} (el esquema nuevo que se acordó), pero
-   parseCostos() de este archivo todavía espera el esquema legado por
-   factura (Fecha, N° Factura, Marca, Proveedor, Motivo, Total) — quedó
-   desactualizado respecto a la hoja real independientemente de este cambio
-   (ya no calzan ni aunque subieras el XLSX a mano). Como todo el resto del
-   dashboard solo usa mes y total de cada registro de costos compartidos,
-   se arma ese arreglo directo con esos dos campos, sin tocar parseCostos.
+   Costos_Compartidos_CP e Inventario_CP (Inv Final) son las dos excepciones:
+   para esas dos el backend ya entrega arreglos limpios, mapeados por NOMBRE
+   de columna con varias variantes de encabezado aceptadas (Mes/Fecha,
+   Concepto/Motivo, Valor/total; Artículo/Subfamilia, Centro de Costo, Cód.
+   Barra, Coste Línea/Coste LP, etc.), en vez de por posición fija de
+   columna. Esto es a propósito: si mañana se agregan o reordenan columnas
+   en esas pestañas (por ejemplo, una columna nueva de "Centro de Costo" o
+   "Cód. Barra" en Inv Final), el backend las sigue reconociendo por nombre
+   y el dashboard no se rompe — a diferencia de parseCostos()/parseInvFinal()
+   de este archivo, que asumen una posición fija de columna (pensada para el
+   XLSX manual) y quedarían desalineadas apenas cambie el orden de columnas
+   de la hoja real. Como el resto del dashboard solo usa un puñado de campos
+   de cada uno (mes/concepto/total para costos; marca/mes/articulo/unidad/
+   stockInventario/total para inventario), se arma cada arreglo directo
+   desde esos campos ya nombrados, sin tocar parseCostos() ni parseInvFinal()
+   (que siguen intactas para cuando se sube el XLSX a mano).
 
    Ningún credential de Google vive en este archivo: la URL de abajo es la
    de un Web App de Apps Script público (sin autenticación) que corre bajo
@@ -517,7 +525,7 @@ document.getElementById('printBtn').addEventListener('click', ()=> window.print(
 */
 
 const GSHEETS_CONFIG = {
-  webAppUrl: 'https://script.google.com/macros/s/AKfycbzNxTmofr8x4SDWmAcFBliQ0rLu34xbr2Y8Enht6VjXT2ey5ycZPN8Rd8T4o1cQW1x7qQ/exec',
+  webAppUrl: 'https://script.google.com/macros/s/AKfycbzl-rP026Dqm_PFkUxJSTyCVEqIFT4PbZegluP__W3iw-soJou1hO94C7fnq4srZvqDQA/exec',
 };
 
 function driveDisponible(){ return !!GSHEETS_CONFIG.webAppUrl; }
@@ -604,10 +612,18 @@ async function cargarDesdeGoogleSheets(){
     const compras = parseCompras(filasPlanasDesdeObjetos(planta.Compras));
     const fabricacion = parseFabricacion(filasPlanasDesdeObjetos(planta.Fabricaciones));
     const traslados = parseTraslados(filasPlanasDesdeObjetos(planta.Traslados_Sedes));
-    const invFinal = parseInvFinal(filasPlanasDesdeObjetos(planta.Inventario_CP));
     const baseConv = parseBaseConv(filasPlanasDesdeObjetos(planta.Base_Conversion));
     const costosCrudos = (json.data.costosCompartidos || []);
     const costos = { rows: costosCrudos.map(c => ({ mes: c.Mes, concepto: c.Concepto, total: Number(c.Valor) || 0 })) };
+    // Inventario_CP (Inv Final) por nombre de columna — ver comentario arriba.
+    const inventarioCrudo = (json.data.inventario || []);
+    const invFinal = { rows: inventarioCrudo.map(c => ({
+      marca: c.Marca, fecha: c.Fecha ? new Date(c.Fecha) : null, mes: c.Mes,
+      almacen: c.Almacen, familia: c.Familia, categoria: c.CentroCosto,
+      articulo: c.Producto, unidad: c.UnidadMedida, costeLinea: Number(c.CosteLinea) || 0,
+      stockAFecha: Number(c.StockAFecha) || 0, variacionStock: Number(c.VariacionStock) || 0,
+      stockInventario: Number(c.StockInventario) || 0, total: Number(c.ValorFinal) || 0
+    })) };
 
     // Solo se reemplaza DATA una vez que todo el parseo anterior terminó sin
     // lanzar excepción: si algo fallara a mitad de camino, el catch de abajo
