@@ -546,35 +546,33 @@ function filasPlanasDesdeObjetos(objArr){
   return [header, ...filas];
 }
 
+// El indicador visual de fuente y los botones "Actualizar datos"/"Carga manual de
+// emergencia" ya no están en la interfaz, pero el usuario sigue necesitando saber si
+// la carga automática está en curso, si falló, o si ya terminó — sin eso, la pantalla
+// se queda pegada en el mensaje "Sube el archivo..." de siempre, sin distinguir
+// "todavía está cargando" de "ya falló". Por eso el estado ahora se refleja
+// directamente en el contenido principal (solo mientras no haya datos cargados:
+// nunca reemplaza un dashboard que ya está mostrando información real).
+function hasAnyData(){
+  return !!(DATA.compras.length || DATA.fabricacion.length || DATA.traslados.length || DATA.invFinal.length);
+}
+function mostrarEstadoContenido(titulo, subtitulo){
+  if(hasAnyData()) return;
+  const el = document.getElementById('content');
+  if(!el) return;
+  el.innerHTML = `<div class="empty-state">${titulo}<div class="sub">${subtitulo||''}</div></div>`;
+}
 function setEstadoFuente(estado, detalle){
-  const dot = document.getElementById('fuenteDot');
-  const label = document.getElementById('fuenteLabel');
-  const msg = document.getElementById('fuenteEstadoMsg');
-  const indicator = document.getElementById('fuenteIndicator');
-  if(!dot || !label || !msg) return;
-
   const mensajes = {
-    cargando: 'Consultando Base de informes...',
-    ok: 'Datos actualizados correctamente.',
-    invalido: 'El archivo encontrado no contiene la estructura requerida.',
-    error_conexion: 'No fue posible consultar Base de informes. Se mantiene la última información válida disponible.',
+    cargando: ['Consultando Base de informes…', 'Esto puede tardar unos segundos, sobre todo la primera vez que se abre desde este equipo.'],
+    invalido: ['La información de Base de informes está incompleta.', 'Faltan datos en algunas de las pestañas requeridas. Puedes subir el archivo manualmente con "Subir XLSX" mientras se corrige.'],
+    error_conexion: (detalle && detalle.motivo === 'timeout')
+      ? ['La consulta a Base de informes tardó demasiado y se canceló.', 'Vuelve a cargar la página para reintentar (normalmente la segunda vez responde más rápido), o sube el archivo manualmente con "Subir XLSX".']
+      : ['No fue posible consultar Base de informes.', 'Vuelve a cargar la página para reintentar, o sube el archivo manualmente con "Subir XLSX".'],
   };
-
-  dot.className = 'fuente-dot' + (
-    estado === 'ok' ? ' ok' :
-    estado === 'cargando' ? ' loading' :
-    (estado === 'invalido' || estado === 'error_conexion') ? ' error' : ''
-  );
-  label.textContent = estado === 'ok' ? 'Fuente: Base de informes ✓' : 'Fuente: Base de informes';
-  msg.textContent = (estado === 'error_conexion' && detalle && detalle.motivo === 'timeout')
-    ? 'La consulta a Base de informes tardó demasiado y se canceló (esto pasa sobre todo la primera vez que se abre desde un navegador o equipo distinto). Puedes intentar "Actualizar datos" de nuevo — normalmente la segunda vez responde más rápido. Se mantiene la última información válida disponible.'
-    : (mensajes[estado] || '');
-
-  if(indicator){
-    indicator.title = (estado === 'ok' && detalle && detalle.fechaTexto)
-      ? `Última actualización: ${detalle.fechaTexto}`
-      : '';
-  }
+  if(estado === 'ok') return; // el propio render() con los datos ya cargados reemplaza cualquier mensaje de estado.
+  const par = mensajes[estado];
+  if(par) mostrarEstadoContenido(par[0], par[1]);
 }
 
 async function cargarDesdeGoogleSheets(){
