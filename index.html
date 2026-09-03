@@ -70,24 +70,27 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     --font-body: 'Inter', sans-serif;
   }
   *{ box-sizing: border-box; }
-  html,body{ margin:0; padding:0; background:var(--bg); color:var(--text); font-family:var(--font-body); }
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--text); font-family:var(--font-body); overflow-x:hidden; }
   body{ min-height:100vh; }
   ::selection{ background:var(--sa); color:var(--paper); }
 
-  .shell{ max-width:1180px; margin:0 auto; padding:28px 20px 80px; }
+  /* Contenedor principal: real ancho fluido (no un max-width fijo angosto).
+     Aprovecha 95% del viewport con un tope de 1800px en pantallas grandes, y
+     mantiene márgenes elegantes en vez de quedar como una columna centrada. */
+  .shell{ width:min(95%, 1800px); margin:0 auto; padding:clamp(18px,2vw,32px) clamp(14px,2.5vw,28px) clamp(48px,6vw,80px); }
 
   /* ---------- Header ---------- */
   .topbar{ display:flex; flex-wrap:wrap; gap:18px; align-items:flex-end; justify-content:space-between; border-bottom:1px solid var(--line); padding-bottom:18px; margin-bottom:22px; }
   .brandmark{ display:flex; flex-direction:column; gap:4px; }
   .brandmark .eyebrow{ font-family:var(--font-mono); font-size:11px; letter-spacing:.04em; color:var(--text-dim); }
-  .brandmark h1{ font-family:var(--font-display); font-weight:500; font-size:32px; margin:0; line-height:1; }
+  .brandmark h1{ font-family:var(--font-display); font-weight:500; font-size:clamp(24px, 1.6vw + 16px, 36px); margin:0; line-height:1; }
   .brandmark h1 em{ font-style:italic; color:var(--sa); }
 
   .controls{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
   .file-btn{ position:relative; overflow:hidden; }
   .file-btn input[type=file]{ position:absolute; inset:0; opacity:0; cursor:pointer; }
   .btn, select{
-    font-family:var(--font-mono); font-size:12.5px; letter-spacing:.01em;
+    font-family:var(--font-mono); font-size:clamp(11.5px, 0.15vw + 11px, 13.5px); letter-spacing:.01em;
     background:var(--bg-raised); color:var(--text); border:1px solid var(--line);
     padding:9px 14px; border-radius:3px; cursor:pointer;
   }
@@ -97,7 +100,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
   /* ---------- Tabs ---------- */
   .tabs{ display:flex; gap:2px; margin-bottom:26px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
-  .tab{ font-family:var(--font-mono); font-size:12.5px; padding:11px 16px; color:var(--text-dim); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; white-space:nowrap; }
+  .tab{ font-family:var(--font-mono); font-size:clamp(11.5px, 0.15vw + 11px, 13.5px); padding:11px 16px; color:var(--text-dim); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; white-space:nowrap; }
   .tab:hover{ color:var(--text); }
   .tab.active{ color:var(--text); border-bottom-color:var(--sa); }
 
@@ -105,17 +108,17 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .kpis{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); margin-bottom:28px; }
   .kpi{ background:var(--bg); padding:18px 18px 16px; }
   .kpi .label{ font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-dim); margin-bottom:10px; }
-  .kpi .value{ font-family:var(--font-display); font-size:26px; font-weight:500; font-variant-numeric:tabular-nums; }
+  .kpi .value{ font-family:var(--font-display); font-size:clamp(22px, 1vw + 17px, 30px); font-weight:500; font-variant-numeric:tabular-nums; }
   .kpi .sub{ font-family:var(--font-mono); font-size:11px; color:var(--text-dim); margin-top:6px; }
   .kpi.empty .value{ color:var(--text-dim); font-size:15px; font-family:var(--font-mono); }
 
   /* ---------- Sections / tables ---------- */
   .section{ margin-bottom:34px; }
   .section-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px; flex-wrap:wrap; gap:8px; border-bottom:2px solid var(--sa); padding-bottom:8px; }
-  .section-head h2{ font-family:var(--font-display); font-size:19px; font-weight:600; margin:0; color:var(--heading); letter-spacing:.01em; }
+  .section-head h2{ font-family:var(--font-display); font-size:clamp(16px, 0.4vw + 15px, 21px); font-weight:600; margin:0; color:var(--heading); letter-spacing:.01em; }
   .section-head .note{ font-family:var(--font-mono); font-size:11px; color:var(--text-dim); }
 
-  table{ width:100%; border-collapse:collapse; font-family:var(--font-mono); font-size:12.5px; }
+  table{ width:100%; border-collapse:collapse; font-family:var(--font-mono); font-size:clamp(12px, 0.3vw + 11.5px, 13.5px); }
   thead th{ text-align:left; font-weight:700; color:var(--paper); font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; padding:9px 10px; background:var(--heading-badge); }
   tbody td{ padding:9px 10px; border-bottom:1px solid var(--line-soft); font-variant-numeric:tabular-nums; }
   tbody tr:hover{ background:var(--bg-raised); }
@@ -123,6 +126,12 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   td.tag-sa{ color:var(--sa); }
   td.tag-ro{ color:var(--ro); }
   tfoot td{ padding:10px; border-top:1px solid var(--line); font-weight:600; }
+
+  /* Cada tabla que se envuelve en tiempo de ejecución (ver envolverTablasConScroll) obtiene su
+     propio scroll horizontal: en pantallas angostas la tabla nunca se aprieta a tamaños ilegibles,
+     y el scroll queda contenido dentro de la tabla — nunca en toda la página. */
+  .table-scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:0; }
+  .table-scroll table{ width:100%; min-width:max-content; }
 
   .callout{ border:1px solid var(--line); border-left:3px solid var(--warn); padding:14px 16px; font-size:13px; line-height:1.5; color:var(--text-dim); background:var(--bg-raised); }
   .callout strong{ color:var(--text); }
@@ -138,14 +147,15 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .empty-state{ font-family:var(--font-display); font-size:18px; color:var(--text-dim); text-align:center; padding:60px 20px; }
   .empty-state .sub{ font-family:var(--font-body); font-size:13px; margin-top:8px; }
 
-  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:28px; }
+  /* Dos columnas cuando hay espacio real para ambas (>=320px cada una); se pliega a una sola
+     columna automáticamente en pantallas angostas, sin necesidad de una media query aparte. */
+  .grid2{ display:grid; grid-template-columns:repeat(auto-fit, minmax(320px,1fr)); gap:28px; }
   .truncate{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:1px; }
-  @media (max-width:760px){ .grid2{ grid-template-columns:1fr; } .shell{ padding:20px 14px 60px; } .brandmark h1{ font-size:26px; } }
 
   .pct-input{ width:56px; font-family:var(--font-mono); background:var(--bg); border:1px solid var(--line); color:var(--text); padding:4px 6px; border-radius:2px; text-align:right; }
 
   .toolbar{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
-  .search-input{ font-family:var(--font-mono); font-size:12.5px; background:var(--bg-raised); border:1px solid var(--line); color:var(--text); padding:8px 12px; border-radius:3px; min-width:220px; flex:1; }
+  .search-input{ font-family:var(--font-mono); font-size:clamp(11.5px, 0.15vw + 11px, 13.5px); background:var(--bg-raised); border:1px solid var(--line); color:var(--text); padding:8px 12px; border-radius:3px; min-width:220px; flex:1; }
   .search-input:focus{ outline:none; border-color:var(--sa); }
   .search-input::placeholder{ color:var(--text-dim); }
   .export-btn{ font-family:var(--font-mono); font-size:11.5px; background:transparent; border:1px solid var(--line); color:var(--text-dim); padding:8px 12px; border-radius:3px; cursor:pointer; white-space:nowrap; }
@@ -289,6 +299,24 @@ function exportExcel(filename, sheetName, dataArray){
 }
 function searchBar(id, placeholder, value){
   return `<input type="search" class="search-input" id="${id}" placeholder="${placeholder}" value="${value.replace(/"/g,'&quot;')}">`;
+}
+/* Pequeño debounce para los buscadores: retrasa solo la actualización de RESULTADOS,
+   nunca toca el <input> — el input nunca se destruye ni se vuelve a crear. */
+function debounce(fn, wait){
+  let t;
+  return function(...args){ clearTimeout(t); t = setTimeout(()=>fn.apply(this,args), wait); };
+}
+/* Envuelve cada <table> recién insertada en un contenedor con scroll horizontal propio,
+   para que en pantallas angostas el scroll quede DENTRO de la tabla y nunca en toda la página. */
+function envolverTablasConScroll(container){
+  if(!container) return;
+  container.querySelectorAll('table').forEach(table=>{
+    if(table.parentElement && table.parentElement.classList.contains('table-scroll')) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'table-scroll';
+    table.parentNode.insertBefore(wrap, table);
+    wrap.appendChild(table);
+  });
 }
 
 /* % de kilos preparados por marca — manual, persistido por mes en localStorage del navegador.
@@ -711,13 +739,14 @@ function render(){
     el.innerHTML = `<div class="empty-state">Sube el archivo de cierre (.xlsx)<div class="sub">Se leen las pestañas Compras, Fabricacion, Traslados, Inv Final, Costos Compartidos y Base Conversion.</div></div>`;
     return;
   }
-  if(activeTab==='resumen') return renderResumen(el);
-  if(activeTab==='compras') return renderCompras(el);
-  if(activeTab==='fabricacion') return renderFabricacion(el);
-  if(activeTab==='traslados') return renderTraslados(el);
-  if(activeTab==='inventarios') return renderInventarios(el);
-  if(activeTab==='liquidacion') return renderLiquidacion(el);
-  if(activeTab==='top10') return renderTop10(el);
+  if(activeTab==='resumen') renderResumen(el);
+  else if(activeTab==='compras') renderCompras(el);
+  else if(activeTab==='fabricacion') renderFabricacion(el);
+  else if(activeTab==='traslados') renderTraslados(el);
+  else if(activeTab==='inventarios') renderInventarios(el);
+  else if(activeTab==='liquidacion') renderLiquidacion(el);
+  else if(activeTab==='top10') renderTop10(el);
+  envolverTablasConScroll(el);
 }
 
 /* ---------- Kardex por producto (mes+marca específicos) ----------
@@ -987,31 +1016,49 @@ function barrasPorMarca(rows, key){
 }
 
 /* ---------- Compras ---------- */
-function renderCompras(el){
+function comprasRowsFiltradas(){
   let rows = applyFilter(DATA.compras).sort((a,b)=>(b.fecha||0)-(a.fecha||0));
   if(searchCompras){
     const q = norm(searchCompras);
     rows = rows.filter(r => norm(r.proveedor).includes(q) || norm(r.articulo).includes(q) || norm(r.familia).includes(q));
   }
+  return rows;
+}
+function comprasKpisHtml(rows){
   const total = sum(rows,'total');
+  return `
+    <div class="kpi"><div class="label">Total compras</div><div class="value">${fmtCOP(total)}</div><div class="sub">${rows.length} líneas</div></div>
+    <div class="kpi"><div class="label">San Agustín</div><div class="value">${fmtCOP(sum(rows.filter(r=>r.marca==='San Agustín'),'total'))}</div></div>
+    <div class="kpi"><div class="label">Rocoto</div><div class="value">${fmtCOP(sum(rows.filter(r=>r.marca==='Rocoto'),'total'))}</div></div>
+  `;
+}
+function actualizarComprasResultados(){
+  const rows = comprasRowsFiltradas();
+  const kpisEl = document.getElementById('comprasKpis');
+  const tablaEl = document.getElementById('comprasTablaWrap');
+  if(kpisEl) kpisEl.innerHTML = comprasKpisHtml(rows);
+  if(tablaEl){ tablaEl.innerHTML = tablaCompras(rows); envolverTablasConScroll(tablaEl); }
+}
+function renderCompras(el){
+  const rows = comprasRowsFiltradas();
   el.innerHTML = `
-    <div class="kpis">
-      <div class="kpi"><div class="label">Total compras</div><div class="value">${fmtCOP(total)}</div><div class="sub">${rows.length} líneas</div></div>
-      <div class="kpi"><div class="label">San Agustín</div><div class="value">${fmtCOP(sum(rows.filter(r=>r.marca==='San Agustín'),'total'))}</div></div>
-      <div class="kpi"><div class="label">Rocoto</div><div class="value">${fmtCOP(sum(rows.filter(r=>r.marca==='Rocoto'),'total'))}</div></div>
-    </div>
+    <div class="kpis" id="comprasKpis">${comprasKpisHtml(rows)}</div>
     <div class="section">
       <div class="section-head"><h2>Detalle</h2><div class="note">Ya deduplicado y filtrado al CP</div></div>
       <div class="toolbar">
         ${searchBar('searchComprasInput','Buscar proveedor, artículo o familia…', searchCompras)}
         <button class="export-btn" id="exportComprasBtn">Exportar Excel</button>
       </div>
-      ${tablaCompras(rows)}
+      <div id="comprasTablaWrap">${tablaCompras(rows)}</div>
     </div>
   `;
-  document.getElementById('searchComprasInput').addEventListener('input', e=>{ searchCompras = e.target.value; renderCompras(el); });
+  // El input permanece montado siempre: escribir solo actualiza #comprasKpis y #comprasTablaWrap,
+  // nunca reconstruye este <input>, así que nunca pierde el foco ni el cursor.
+  const actualizarDebounced = debounce(actualizarComprasResultados, 200);
+  document.getElementById('searchComprasInput').addEventListener('input', e=>{ searchCompras = e.target.value; actualizarDebounced(); });
   document.getElementById('exportComprasBtn').addEventListener('click', ()=>{
-    exportExcel(`Compras_CP_${filtroMes}.xlsx`, 'Compras', rows.map(r=>({
+    const rowsActuales = comprasRowsFiltradas();
+    exportExcel(`Compras_CP_${filtroMes}.xlsx`, 'Compras', rowsActuales.map(r=>({
       Mes:monthLabel(r.mes), Marca:r.marca, Proveedor:r.proveedor, Familia:r.familia, Articulo:r.articulo,
       'Uds.C':r.uds, 'Valor Unitario':r.valorUnit, 'Total Neto':r.total
     })));
@@ -1026,13 +1073,26 @@ function tablaCompras(rows){
 }
 
 /* ---------- Fabricación ---------- */
-function renderFabricacion(el){
+function fabricacionRowsFiltradas(){
   let rows = applyFilter(DATA.fabricacion);
   if(searchFabricacion){
     const q = norm(searchFabricacion);
     rows = rows.filter(r => norm(r.artifabri).includes(q) || norm(r.codigo).includes(q));
   }
+  return rows;
+}
+function fabricacionRowsParaKg(){
+  return filtroMes==='Todos' ? DATA.fabricacion : DATA.fabricacion.filter(r=>r.mes===filtroMes);
+}
+function fabricacionKpisHtml(rows){
   const total = sum(rows,'costeVariacion');
+  return `
+    <div class="kpi"><div class="label">Costo total insumos</div><div class="value">${fmtCOP(total)}</div><div class="sub">${rows.length} líneas</div></div>
+    <div class="kpi"><div class="label">San Agustín</div><div class="value">${fmtCOP(sum(rows.filter(r=>r.marca==='San Agustín'),'costeVariacion'))}</div></div>
+    <div class="kpi"><div class="label">Rocoto</div><div class="value">${fmtCOP(sum(rows.filter(r=>r.marca==='Rocoto'),'costeVariacion'))}</div></div>
+  `;
+}
+function fabricacionTop25Html(rows){
   const porArticulo = {};
   rows.forEach(r=>{
     const k = r.artifabri||'(sin nombre)';
@@ -1040,9 +1100,27 @@ function renderFabricacion(el){
     porArticulo[k].costo += r.costeVariacion;
   });
   const topArticulos = Object.entries(porArticulo).sort((a,b)=>b[1].costo-a[1].costo).slice(0,25);
-
-  // Participación en kilos preparados: se calcula sobre el mes filtrado (ambas marcas), no sobre la marca filtrada, y sin el buscador (es un total agregado)
-  const rowsParaKg = filtroMes==='Todos' ? DATA.fabricacion : DATA.fabricacion.filter(r=>r.mes===filtroMes);
+  return `<table><thead><tr><th>Marca</th><th>Producto</th><th class="num">Costo insumos</th></tr></thead><tbody>
+    ${topArticulos.map(([nombre,v])=>`<tr><td class="${tagClass(v.marca)}">${v.marca}</td><td>${nombre}</td><td class="num">${fmtCOP(v.costo)}</td></tr>`).join('') || '<tr><td colspan="3">Sin datos.</td></tr>'}
+    </tbody></table>`;
+}
+function fabricacionKilosTablaHtml(){
+  const rowsParaKg = fabricacionRowsParaKg();
+  const filtradas = searchFabricacion ? rowsParaKg.filter(r=>{ const q=norm(searchFabricacion); return norm(r.artifabri).includes(q) || norm(r.codigo).includes(q); }) : rowsParaKg;
+  return tablaKilosPorReferencia(filtradas);
+}
+function actualizarFabricacionResultados(){
+  const rows = fabricacionRowsFiltradas();
+  const kpisEl = document.getElementById('fabricacionKpis');
+  const kgEl = document.getElementById('fabricacionKilosWrap');
+  const topEl = document.getElementById('fabricacionTop25Wrap');
+  if(kpisEl) kpisEl.innerHTML = fabricacionKpisHtml(rows);
+  if(kgEl){ kgEl.innerHTML = fabricacionKilosTablaHtml(); envolverTablasConScroll(kgEl); }
+  if(topEl){ topEl.innerHTML = fabricacionTop25Html(rows); envolverTablasConScroll(topEl); }
+}
+function renderFabricacion(el){
+  const rows = fabricacionRowsFiltradas();
+  const rowsParaKg = fabricacionRowsParaKg();
   const part = participacionKilos(rowsParaKg);
 
   let desgloseMeses = '';
@@ -1057,11 +1135,7 @@ function renderFabricacion(el){
   }
 
   el.innerHTML = `
-    <div class="kpis">
-      <div class="kpi"><div class="label">Costo total insumos</div><div class="value">${fmtCOP(total)}</div><div class="sub">${rows.length} líneas</div></div>
-      <div class="kpi"><div class="label">San Agustín</div><div class="value">${fmtCOP(sum(rows.filter(r=>r.marca==='San Agustín'),'costeVariacion'))}</div></div>
-      <div class="kpi"><div class="label">Rocoto</div><div class="value">${fmtCOP(sum(rows.filter(r=>r.marca==='Rocoto'),'costeVariacion'))}</div></div>
-    </div>
+    <div class="kpis" id="fabricacionKpis">${fabricacionKpisHtml(rows)}</div>
 
     <div class="section">
       <div class="section-head"><h2>Participación en kilos preparados${filtroMes!=='Todos'?' — '+monthLabel(filtroMes):''}</h2><div class="note">Fabricación × Base_Conversion</div></div>
@@ -1084,21 +1158,23 @@ function renderFabricacion(el){
         ${searchBar('searchFabInput','Buscar producto o código…', searchFabricacion)}
         <button class="export-btn" id="exportKgBtn">Exportar Excel</button>
       </div>
-      ${tablaKilosPorReferencia(searchFabricacion ? rowsParaKg.filter(r=>{ const q=norm(searchFabricacion); return norm(r.artifabri).includes(q) || norm(r.codigo).includes(q); }) : rowsParaKg)}
+      <div id="fabricacionKilosWrap">${fabricacionKilosTablaHtml()}</div>
     </div>
 
     <div class="section">
       <div class="section-head"><h2>Costo por producto fabricado (top 25)</h2><div class="note">Suma de Coste Variación por Artifabri</div></div>
-      <table><thead><tr><th>Marca</th><th>Producto</th><th class="num">Costo insumos</th></tr></thead><tbody>
-      ${topArticulos.map(([nombre,v])=>`<tr><td class="${tagClass(v.marca)}">${v.marca}</td><td>${nombre}</td><td class="num">${fmtCOP(v.costo)}</td></tr>`).join('') || '<tr><td colspan="3">Sin datos.</td></tr>'}
-      </tbody></table>
+      <div id="fabricacionTop25Wrap">${fabricacionTop25Html(rows)}</div>
     </div>
   `;
-  document.getElementById('searchFabInput').addEventListener('input', e=>{ searchFabricacion = e.target.value; renderFabricacion(el); });
+  // El input permanece montado: escribir solo actualiza los wraps de KPIs/tablas de abajo,
+  // nunca reconstruye este <input>, así que nunca pierde el foco ni el cursor.
+  const actualizarDebounced = debounce(actualizarFabricacionResultados, 200);
+  document.getElementById('searchFabInput').addEventListener('input', e=>{ searchFabricacion = e.target.value; actualizarDebounced(); });
   document.getElementById('exportKgBtn').addEventListener('click', ()=>{
+    const rowsParaKgActual = fabricacionRowsParaKg();
     const filasKg = [];
     const porRef = {};
-    rowsParaKg.forEach(r=>{
+    rowsParaKgActual.forEach(r=>{
       if(searchFabricacion){ const q=norm(searchFabricacion); if(!norm(r.artifabri).includes(q) && !norm(r.codigo).includes(q)) return; }
       const kg = filaAKg(r); if(kg===null) return;
       const key = r.codigo+'|'+r.marca;
@@ -1145,13 +1221,23 @@ function tablaKilosPorReferencia(rows){
 }
 
 /* ---------- Traslados ---------- */
-function renderTraslados(el){
+function trasladosRowsFiltradas(){
   let rows = applyFilter(DATA.traslados);
   if(searchTraslados){
     const q = norm(searchTraslados);
     rows = rows.filter(r => norm(r.articulo).includes(q) || norm(r.sedeDestino).includes(q));
   }
+  return rows;
+}
+function trasladosKpisHtml(rows){
   const total = sum(rows,'costeVariacion');
+  return `
+    <div class="kpi"><div class="label">Valor total trasladado</div><div class="value">${fmtCOP(total)}</div><div class="sub">${rows.length} líneas</div></div>
+    <div class="kpi"><div class="label">San Agustín</div><div class="value">${fmtCOP(sum(rows.filter(r=>r.marca==='San Agustín'),'costeVariacion'))}</div></div>
+    <div class="kpi"><div class="label">Rocoto</div><div class="value">${fmtCOP(sum(rows.filter(r=>r.marca==='Rocoto'),'costeVariacion'))}</div></div>
+  `;
+}
+function trasladosTablaHtml(rows){
   const porSede = {};
   rows.forEach(r=>{
     const k = r.sedeDestino||'(sin sede)';
@@ -1159,27 +1245,36 @@ function renderTraslados(el){
     porSede[k].valor += r.costeVariacion; porSede[k].n++;
   });
   const sedes = Object.entries(porSede).sort((a,b)=>b[1].valor-a[1].valor);
-
+  return `<table><thead><tr><th>Sede</th><th>Marca</th><th class="num">Líneas</th><th class="num">Valor</th></tr></thead><tbody>
+    ${sedes.map(([sede,v])=>`<tr><td>${sede}</td><td class="${tagClass(v.marca)}">${v.marca}</td><td class="num">${v.n}</td><td class="num">${fmtCOP(v.valor)}</td></tr>`).join('') || '<tr><td colspan="4">Sin datos.</td></tr>'}
+    </tbody></table>`;
+}
+function actualizarTrasladosResultados(){
+  const rows = trasladosRowsFiltradas();
+  const kpisEl = document.getElementById('trasladosKpis');
+  const tablaEl = document.getElementById('trasladosTablaWrap');
+  if(kpisEl) kpisEl.innerHTML = trasladosKpisHtml(rows);
+  if(tablaEl){ tablaEl.innerHTML = trasladosTablaHtml(rows); envolverTablasConScroll(tablaEl); }
+}
+function renderTraslados(el){
+  const rows = trasladosRowsFiltradas();
   el.innerHTML = `
-    <div class="kpis">
-      <div class="kpi"><div class="label">Valor total trasladado</div><div class="value">${fmtCOP(total)}</div><div class="sub">${rows.length} líneas</div></div>
-      <div class="kpi"><div class="label">San Agustín</div><div class="value">${fmtCOP(sum(rows.filter(r=>r.marca==='San Agustín'),'costeVariacion'))}</div></div>
-      <div class="kpi"><div class="label">Rocoto</div><div class="value">${fmtCOP(sum(rows.filter(r=>r.marca==='Rocoto'),'costeVariacion'))}</div></div>
-    </div>
+    <div class="kpis" id="trasladosKpis">${trasladosKpisHtml(rows)}</div>
     <div class="section">
       <div class="section-head"><h2>Por sede destino</h2></div>
       <div class="toolbar">
         ${searchBar('searchTrasInput','Buscar artículo o sede…', searchTraslados)}
         <button class="export-btn" id="exportTrasBtn">Exportar Excel</button>
       </div>
-      <table><thead><tr><th>Sede</th><th>Marca</th><th class="num">Líneas</th><th class="num">Valor</th></tr></thead><tbody>
-      ${sedes.map(([sede,v])=>`<tr><td>${sede}</td><td class="${tagClass(v.marca)}">${v.marca}</td><td class="num">${v.n}</td><td class="num">${fmtCOP(v.valor)}</td></tr>`).join('') || '<tr><td colspan="4">Sin datos.</td></tr>'}
-      </tbody></table>
+      <div id="trasladosTablaWrap">${trasladosTablaHtml(rows)}</div>
     </div>
   `;
-  document.getElementById('searchTrasInput').addEventListener('input', e=>{ searchTraslados = e.target.value; renderTraslados(el); });
+  // El input permanece montado: escribir solo actualiza #trasladosKpis y #trasladosTablaWrap.
+  const actualizarDebounced = debounce(actualizarTrasladosResultados, 200);
+  document.getElementById('searchTrasInput').addEventListener('input', e=>{ searchTraslados = e.target.value; actualizarDebounced(); });
   document.getElementById('exportTrasBtn').addEventListener('click', ()=>{
-    exportExcel(`Traslados_CP_${filtroMes}.xlsx`, 'Traslados', rows.map(r=>({
+    const rowsActuales = trasladosRowsFiltradas();
+    exportExcel(`Traslados_CP_${filtroMes}.xlsx`, 'Traslados', rowsActuales.map(r=>({
       Mes:monthLabel(r.mes), Marca:r.marca, Sede:r.sedeDestino, Articulo:r.articulo,
       Cantidad:r.variacionStock, Unidad:r.subarticulo, Valor:r.costeVariacion
     })));
@@ -1234,47 +1329,34 @@ function renderInventarios(el){
 
     ${renderKardexPorProducto()}
   `;
+  bindKardexListeners();
 }
 
-function renderKardexPorProducto(){
-  if(filtroMes==='Todos'){
-    return `<div class="section"><div class="section-head"><h2>Kardex por producto</h2></div><div class="callout blank">Selecciona un mes específico arriba para ver el kardex artículo por artículo (necesita el mes anterior para calcular el inicial).</div></div>`;
-  }
+function kardexBloquesData(){
   // Este módulo siempre muestra ambas marcas lado a lado, sin importar el filtro de marca de arriba —
   // es el que sirve para comparar San Agustín vs Rocoto en el mismo mes.
   const marcas = ['San Agustín','Rocoto'];
-  const toolbar = `
-    <div class="note" style="margin-bottom:8px">Este bloque siempre muestra San Agustín y Rocoto juntos, sin importar el filtro de marca de arriba.</div>
-    <div class="toolbar">
-      ${searchBar('searchKardexInput','Buscar artículo…', searchKardex)}
-      <select id="estadoKardexSelect">
-        <option value="Todos" ${estadoKardexFilter==='Todos'?'selected':''}>Todos los estados</option>
-        <option value="muy elevado" ${estadoKardexFilter==='muy elevado'?'selected':''}>🔴 Muy elevado</option>
-        <option value="manejable" ${estadoKardexFilter==='manejable'?'selected':''}>🟡 Manejable</option>
-        <option value="bien" ${estadoKardexFilter==='bien'?'selected':''}>🟢 Bien</option>
-      </select>
-      <select id="unidadKardexSelect">
-        <option value="nativa" ${kardexUnidad==='nativa'?'selected':''}>Unidad nativa</option>
-        <option value="kg" ${kardexUnidad==='kg'?'selected':''}>Kilos (donde haya conversión)</option>
-      </select>
-      <button class="export-btn" id="exportKardexBtn">Exportar Excel</button>
-    </div>`;
-
-  const bloques = marcas.map(marca=>{
-    if(!invFinalDisponible(filtroMes, marca)){
-      return {marca, html:`<div class="section"><div class="section-head"><h2>Kardex por producto — ${marca}</h2></div><div class="callout blank">Sin Inventario Final cargado para ${marca} en ${monthLabel(filtroMes)}.</div></div>`, rows:[]};
-    }
+  return marcas.map(marca=>{
+    if(!invFinalDisponible(filtroMes, marca)) return {marca, rows:null};
     let rows = buildKardexProductos(filtroMes, marca).filter(r=>r.estado!==null && norm(r.articulo).startsWith('sub'));
     if(searchKardex){ const q = norm(searchKardex); rows = rows.filter(r=>norm(r.articulo).includes(q)); }
     if(estadoKardexFilter!=='Todos'){ rows = rows.filter(r=>r.estado===estadoKardexFilter); }
-    const enKg = kardexUnidad==='kg';
+    return {marca, rows};
+  });
+}
+function kardexResultsHtml(){
+  const enKg = kardexUnidad==='kg';
+  const coloresVar = { bien:'#2E8B3D', manejable:'#D4A017', 'muy elevado':'#C0392B' };
+  const fmt = (nativo, kg) => {
+    if(!enKg) return nativo===null ? '—' : fmtNum(nativo);
+    return kg===null ? '<span style="color:var(--text-dim)">sin conv.</span>' : fmtNum(kg);
+  };
+  return kardexBloquesData().map(({marca, rows})=>{
+    if(rows===null){
+      return `<div class="section"><div class="section-head"><h2>Kardex por producto — ${marca}</h2></div><div class="callout blank">Sin Inventario Final cargado para ${marca} en ${monthLabel(filtroMes)}.</div></div>`;
+    }
     const sinConvertirEnKg = enKg ? rows.filter(r=>!r.convertible).length : 0;
-    const fmt = (nativo, kg) => {
-      if(!enKg) return nativo===null ? '—' : fmtNum(nativo);
-      return kg===null ? '<span style="color:var(--text-dim)">sin conv.</span>' : fmtNum(kg);
-    };
-    const coloresVar = { bien:'#2E8B3D', manejable:'#D4A017', 'muy elevado':'#C0392B' };
-    const html = `
+    return `
       <div class="section">
         <div class="section-head"><h2>Kardex por producto — ${marca} · ${monthLabel(filtroMes)}</h2><div class="note">Inicial + Fabricado − Trasladado = Final esperado, comparado contra el Final real de Inv Final</div></div>
         <div class="callout" style="margin-bottom:12px">
@@ -1297,27 +1379,61 @@ function renderKardexPorProducto(){
         </tbody></table>
       </div>
     `;
-    return {marca, html, rows};
+  }).join('');
+}
+function kardexAllRowsParaExport(){
+  return kardexBloquesData().flatMap(({marca, rows}) => (rows||[]).map(r=>({...r, Marca:marca})));
+}
+function renderKardexPorProducto(){
+  if(filtroMes==='Todos'){
+    return `<div class="section"><div class="section-head"><h2>Kardex por producto</h2></div><div class="callout blank">Selecciona un mes específico arriba para ver el kardex artículo por artículo (necesita el mes anterior para calcular el inicial).</div></div>`;
+  }
+  const toolbar = `
+    <div class="note" style="margin-bottom:8px">Este bloque siempre muestra San Agustín y Rocoto juntos, sin importar el filtro de marca de arriba.</div>
+    <div class="toolbar">
+      ${searchBar('searchKardexInput','Buscar artículo…', searchKardex)}
+      <select id="estadoKardexSelect">
+        <option value="Todos" ${estadoKardexFilter==='Todos'?'selected':''}>Todos los estados</option>
+        <option value="muy elevado" ${estadoKardexFilter==='muy elevado'?'selected':''}>🔴 Muy elevado</option>
+        <option value="manejable" ${estadoKardexFilter==='manejable'?'selected':''}>🟡 Manejable</option>
+        <option value="bien" ${estadoKardexFilter==='bien'?'selected':''}>🟢 Bien</option>
+      </select>
+      <select id="unidadKardexSelect">
+        <option value="nativa" ${kardexUnidad==='nativa'?'selected':''}>Unidad nativa</option>
+        <option value="kg" ${kardexUnidad==='kg'?'selected':''}>Kilos (donde haya conversión)</option>
+      </select>
+      <button class="export-btn" id="exportKardexBtn">Exportar Excel</button>
+    </div>`;
+  return toolbar + `<div id="kardexResultsWrap">${kardexResultsHtml()}</div>`;
+}
+function actualizarKardexResultados(){
+  const wrap = document.getElementById('kardexResultsWrap');
+  if(!wrap) return;
+  wrap.innerHTML = kardexResultsHtml();
+  envolverTablasConScroll(wrap);
+}
+function bindKardexListeners(){
+  // El input y los selects permanecen montados: cambiarlos solo actualiza #kardexResultsWrap,
+  // nunca reconstruye el toolbar completo (así el buscador nunca pierde el foco).
+  const actualizarDebounced = debounce(actualizarKardexResultados, 200);
+  const si = document.getElementById('searchKardexInput');
+  if(si) si.addEventListener('input', e=>{ searchKardex = e.target.value; actualizarDebounced(); });
+  const se = document.getElementById('estadoKardexSelect');
+  if(se) se.addEventListener('change', e=>{ estadoKardexFilter = e.target.value; actualizarKardexResultados(); });
+  const su = document.getElementById('unidadKardexSelect');
+  if(su) su.addEventListener('change', e=>{ kardexUnidad = e.target.value; actualizarKardexResultados(); });
+  const eb = document.getElementById('exportKardexBtn');
+  if(eb) eb.addEventListener('click', ()=>{
+    const todasLasFilas = kardexAllRowsParaExport();
+    exportExcel(`Kardex_producto_${filtroMes}.xlsx`, 'Kardex', todasLasFilas.map(r=>({
+      Marca:r.Marca, Articulo:r.articulo, Unidad:r.unidad, Codigo:r.codigo||'',
+      Inicial:r.inicial, Fabricado:r.fabricado, Trasladado:r.trasladado,
+      'Final esperado':r.finalEsperado, 'Final real':r.finalReal, Variacion:r.variacion,
+      'Inicial (kg)':r.inicialKg, 'Fabricado (kg)':r.fabricadoKg, 'Trasladado (kg)':r.trasladadoKg,
+      'Final esperado (kg)':r.finalEsperadoKg, 'Final real (kg)':r.finalRealKg, 'Variacion (kg)':r.variacionKg,
+      Estado:r.estado
+    })));
   });
-
-  const todasLasFilas = bloques.flatMap(b => b.rows.map(r=>({...r, Marca:b.marca})));
-  setTimeout(()=>{
-    const si = document.getElementById('searchKardexInput'); if(si) si.addEventListener('input', e=>{ searchKardex = e.target.value; render(); });
-    const se = document.getElementById('estadoKardexSelect'); if(se) se.addEventListener('change', e=>{ estadoKardexFilter = e.target.value; render(); });
-    const su = document.getElementById('unidadKardexSelect'); if(su) su.addEventListener('change', e=>{ kardexUnidad = e.target.value; render(); });
-    const eb = document.getElementById('exportKardexBtn'); if(eb) eb.addEventListener('click', ()=>{
-      exportExcel(`Kardex_producto_${filtroMes}.xlsx`, 'Kardex', todasLasFilas.map(r=>({
-        Marca:r.Marca, Articulo:r.articulo, Unidad:r.unidad, Codigo:r.codigo||'',
-        Inicial:r.inicial, Fabricado:r.fabricado, Trasladado:r.trasladado,
-        'Final esperado':r.finalEsperado, 'Final real':r.finalReal, Variacion:r.variacion,
-        'Inicial (kg)':r.inicialKg, 'Fabricado (kg)':r.fabricadoKg, 'Trasladado (kg)':r.trasladadoKg,
-        'Final esperado (kg)':r.finalEsperadoKg, 'Final real (kg)':r.finalRealKg, 'Variacion (kg)':r.variacionKg,
-        Estado:r.estado
-      })));
-    });
-  }, 0);
-
-  return toolbar + bloques.map(b=>b.html).join('');
 }
 
 /* ---------- Liquidación SA vs RO ---------- */
