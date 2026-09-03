@@ -1309,7 +1309,11 @@ function renderInventarios(el){
     const comprasMes = sum(DATA.compras.filter(r=>r.mes===mes && r.marca===marca),'total');
     const fabMes = sum(DATA.fabricacion.filter(r=>r.mes===mes && r.marca===marca),'costeVariacion');
     const trasMes = sum(DATA.traslados.filter(r=>r.mes===mes && r.marca===marca),'costeVariacion');
-    return {mes, marca, inicialTotal, finalTotal, comprasMes, fabMes, trasMes};
+    // Final esperado = Inicial + Compras − Traslados (Fabricación queda fuera de esta fórmula:
+    // se muestra aparte como referencia). Diferencia = Final real − Final esperado.
+    const finalEsperado = inicialTotal!==null ? inicialTotal + comprasMes - trasMes : null;
+    const diferencia = (inicialTotal!==null) ? finalTotal - finalEsperado : null;
+    return {mes, marca, inicialTotal, finalTotal, comprasMes, fabMes, trasMes, finalEsperado, diferencia};
   }).filter(k=> (filtroMes==='Todos'||k.mes===filtroMes) && (filtroMarca==='Todos'||k.marca===filtroMarca) )
     .sort((a,b)=> (a.mes||'').localeCompare(b.mes||'') || a.marca.localeCompare(b.marca));
 
@@ -1320,21 +1324,23 @@ function renderInventarios(el){
       <div class="kpi"><div class="label">Rocoto</div><div class="value">${fmtCOP(sum(rows.filter(r=>r.marca==='Rocoto'),'total'))}</div></div>
     </div>
     <div class="callout" style="margin-bottom:24px;">
-      <strong>Cómo leer este módulo:</strong> el Kardex solo se activa para un mes+marca cuando Inv Final trae datos propios de ese periodo — si no, se muestra vacío en vez de inventar un número. El "Inicial" es el Total de Inv Final del mes anterior de la misma marca (cuando existe), no una fórmula derivada de la misma fila: verificamos con datos reales que Coste Línea × Stock no siempre reproduce el Total que ya calcula el ERP, así que confiamos en el Total que él entrega. Compras y Fabricación del mes se muestran al lado como referencia — no van a cuadrar exacto contra la diferencia Inicial/Final, porque el ERP probablemente costea con un promedio ponderado distinto al costo puntual de compra; eso es esperado.
+      <strong>Cómo leer este módulo:</strong> el Kardex solo se activa para un mes+marca cuando Inv Final trae datos propios de ese periodo — si no, se muestra vacío en vez de inventar un número. El "Inicial" es el Total de Inv Final del mes anterior de la misma marca (cuando existe). El "Final esperado" es Inicial + Compras − Traslados; la "Diferencia" es Final real menos Final esperado. Fabricación se muestra aparte como referencia (no entra en esta fórmula) — verás que casi nunca da exactamente cero, porque Fabricación sí transforma valor (no es solo un movimiento de compra/traslado) y el ERP probablemente costea con un promedio ponderado distinto al costo puntual de compra. La diferencia grande no es un error del dashboard, es información: te dice cuánto se aleja tu inventario real de lo que predice el movimiento de caja puro.
     </div>
     <div class="section">
       <div class="section-head"><h2>Kardex por mes y marca</h2></div>
-      <table><thead><tr><th>Mes</th><th>Marca</th><th class="num">Inicial</th><th class="num">Compras (ref.)</th><th class="num">Consumo Fabric. (ref.)</th><th class="num">Traslados (ref.)</th><th class="num">Final</th></tr></thead><tbody>
+      <div id="kardexMesMarcaWrap"><table><thead><tr><th>Mes</th><th>Marca</th><th class="num">Inicial</th><th class="num">Compras</th><th class="num">Traslados</th><th class="num">Final esperado</th><th class="num">Fabricación (ref.)</th><th class="num">Final real</th><th class="num">Diferencia</th></tr></thead><tbody>
       ${kardexRows.map(k=>`<tr>
         <td>${monthLabel(k.mes)}</td>
         <td class="${tagClass(k.marca)}">${k.marca}</td>
         <td class="num">${k.inicialTotal===null ? '<span style="color:var(--text-dim)">sin mes anterior</span>' : fmtCOP(k.inicialTotal)}</td>
         <td class="num">${fmtCOP(k.comprasMes)}</td>
-        <td class="num">${fmtCOP(k.fabMes)}</td>
         <td class="num">${fmtCOP(k.trasMes)}</td>
+        <td class="num">${k.finalEsperado===null ? '—' : fmtCOP(k.finalEsperado)}</td>
+        <td class="num">${fmtCOP(k.fabMes)}</td>
         <td class="num">${fmtCOP(k.finalTotal)}</td>
-      </tr>`).join('') || '<tr><td colspan="7">Sin Inventario Final cargado para este filtro.</td></tr>'}
-      </tbody></table>
+        <td class="num">${k.diferencia===null ? '—' : fmtCOP(k.diferencia)}</td>
+      </tr>`).join('') || '<tr><td colspan="9">Sin Inventario Final cargado para este filtro.</td></tr>'}
+      </tbody></table></div>
     </div>
 
     ${renderKardexPorProducto()}
