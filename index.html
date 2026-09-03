@@ -173,6 +173,15 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .theme-dots{ display:flex; gap:5px; margin-top:8px; }
   .theme-dots span{ width:11px; height:11px; border-radius:50%; display:inline-block; }
   .modal-close{ margin-top:20px; }
+
+  /* ---------- Indicador de fuente (Google Drive) ---------- */
+  .fuente-indicator{ display:flex; align-items:flex-start; gap:8px; font-family:var(--font-mono); font-size:11.5px; color:var(--text-dim); padding:9px 12px; border:1px solid var(--line); border-radius:3px; background:var(--bg-raised); cursor:default; }
+  .fuente-dot{ width:8px; height:8px; border-radius:50%; background:var(--text-dim); flex-shrink:0; margin-top:3px; }
+  .fuente-dot.ok{ background:var(--ro); }
+  .fuente-dot.loading{ background:var(--warn); }
+  .fuente-dot.error{ background:var(--sa); }
+  #fuenteLabel{ font-weight:700; color:var(--text); }
+  .fuente-msg{ margin-top:2px; }
 </style>
 </head>
 <body>
@@ -184,6 +193,15 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       <h1>Cierre de mes<br><em>CP</em></h1>
     </div>
     <div class="controls">
+      <div class="fuente-indicator" id="fuenteIndicator" hidden>
+        <span class="fuente-dot" id="fuenteDot"></span>
+        <div>
+          <div id="fuenteLabel">Fuente: Base de informes</div>
+          <div id="fuenteEstadoMsg" class="fuente-msg"></div>
+        </div>
+      </div>
+      <button class="btn" id="btnActualizar" type="button" hidden>↻ Actualizar datos</button>
+      <button class="btn" id="btnToggleManual" type="button" hidden style="font-size:11px;">Carga manual de emergencia</button>
       <label class="btn file-btn" id="fileBtnLabel">Subir XLSX
         <input type="file" id="fileInput" accept=".xlsx,.xls">
       </label>
@@ -385,11 +403,14 @@ function parseBaseConv(rows){
   return {rows: data.map(r=>({codigo:r[0], articulo:r[1], unidad:r[2], factor:Number(r[3])||1}))};
 }
 
-/* ============ Carga de archivo ============ */
-document.getElementById('fileInput').addEventListener('change', async (e)=>{
-  const file = e.target.files[0];
-  if(!file) return;
-  const buf = await file.arrayBuffer();
+/* ============ Carga de archivo ============
+   procesarWorkbookBuffer() es la función única de procesamiento: recibe un
+   ArrayBuffer y hace exactamente lo que antes hacía el listener de fileInput
+   en línea (leer el workbook, ubicar cada hoja, parsear, poblar DATA,
+   refrescar el selector de mes y renderizar). Se extrajo a una función aparte
+   ÚNICAMENTE para poder reutilizarla desde la carga automática de Google
+   Drive sin duplicar lógica — el comportamiento es idéntico al de antes. */
+async function procesarWorkbookBuffer(buf, fileName){
   const wb = XLSX.read(buf, {type:'array', cellDates:true});
 
   const comprasSheet = findSheet(wb, 'compras');
@@ -412,6 +433,14 @@ document.getElementById('fileInput').addEventListener('change', async (e)=>{
 
   populateMonthFilter();
   render();
+  return wb;
+}
+
+document.getElementById('fileInput').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const buf = await file.arrayBuffer();
+  await procesarWorkbookBuffer(buf, file.name);
 });
 
 function populateMonthFilter(){
@@ -426,6 +455,216 @@ function populateMonthFilter(){
 document.getElementById('mesFilter').addEventListener('change', e=>{ filtroMes = e.target.value; render(); });
 document.getElementById('marcaFilter').addEventListener('change', e=>{ filtroMarca = e.target.value; render(); });
 document.getElementById('printBtn').addEventListener('click', ()=> window.print());
+
+/* ============================================================
+   FUENTE AUTOMÁTICA — GOOGLE DRIVE (vía Google Apps Script)
+   ============================================================
+   Bloque 100% aditivo: no modifica fileInput, parseCompras/parseFabricacion/
+   etc., ni ninguna función de render. Su única responsabilidad es obtener un
+   ArrayBuffer del período pedido y pasárselo a procesarWorkbookBuffer(),
+   igual que hace la carga manual.
+
+   Ningún credential de Google Drive vive en este archivo: solo la URL
+   pública del Web App de Apps Script (que corre bajo la cuenta dueña de la
+   carpeta "Base de informes") y un token de aplicación para que no cualquiera
+   con la URL pueda leer los archivos. Las credenciales reales de Drive
+   quedan del lado del servidor, en Code.gs, y nunca se exponen aquí.
+
+   CONFIGURACIÓN: pega la URL de tu Web App (termina en /exec) y el token que
+   definiste en las Propiedades del script de Code.gs. Si se deja vacío, el
+   dashboard funciona exactamente igual que hoy (carga manual con "Subir
+   XLSX"), sin ningún cambio de comportamiento ni de diseño.
+*/
+
+const DRIVE_CONFIG = {
+  webAppUrl: '', // ej: 'https://script.google.com/macros/s/AKfycb.../exec'
+  token: '',     // debe coincidir con ACCESS_TOKEN en Code.gs
+};
+
+let ultimoWorkbookValido = null; // { fileId, fileName, lastUpdated }
+let periodosDisponibles = [];
+
+function driveDisponible(){ return !!DRIVE_CONFIG.webAppUrl; }
+
+async function driveListFiles(){
+  const url = `${DRIVE_CONFIG.webAppUrl}?action=list&token=${encodeURIComponent(DRIVE_CONFIG.token)}`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  if(!data.ok) throw new Error(data.error || 'Respuesta inválida de Base de informes.');
+  return data.files || [];
+}
+
+async function driveGetFile(fileId){
+  const url = `${DRIVE_CONFIG.webAppUrl}?action=get&fileId=${encodeURIComponent(fileId)}&token=${encodeURIComponent(DRIVE_CONFIG.token)}`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  if(!data.ok) throw new Error(data.error || 'No se pudo descargar el archivo.');
+  return data; // { fileName, lastUpdated, base64 }
+}
+
+function base64ToArrayBuffer(base64){
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++) bytes[i] = binary.charCodeAt(i);
+  return bytes.buffer;
+}
+
+// Validación estructural mínima antes de aceptar un workbook como bueno.
+// Reutiliza findSheet/sheetToRows ya existentes: no duplica lógica de parseo.
+function validarWorkbook(wb){
+  const requeridas = [
+    { aliases:['compras'], nombre:'Compras' },
+    { aliases:['fabricacion'], nombre:'Fabricación' },
+    { aliases:['traslados'], nombre:'Traslados' },
+  ];
+  for(const req of requeridas){
+    const sheet = findSheet(wb, ...req.aliases);
+    if(!sheet) return { valido:false, razon:`Falta la hoja "${req.nombre}".` };
+    const rows = sheetToRows(sheet);
+    if(rows.length < 2) return { valido:false, razon:`La hoja "${req.nombre}" no tiene datos.` };
+  }
+  return { valido:true };
+}
+
+function setEstadoFuente(estado, detalle){
+  const dot = document.getElementById('fuenteDot');
+  const label = document.getElementById('fuenteLabel');
+  const msg = document.getElementById('fuenteEstadoMsg');
+  const indicator = document.getElementById('fuenteIndicator');
+  if(!dot || !label || !msg) return;
+
+  const mensajes = {
+    cargando: 'Consultando Base de informes...',
+    ok: 'Datos actualizados correctamente.',
+    sin_periodo: `No se encontró información para ${detalle && detalle.mesLabel ? detalle.mesLabel : 'el período seleccionado'}.`,
+    invalido: 'El archivo encontrado no contiene la estructura requerida.',
+    error_conexion: 'No fue posible consultar Base de informes. Se mantiene la última información válida disponible.',
+  };
+
+  dot.className = 'fuente-dot' + (
+    estado === 'ok' ? ' ok' :
+    estado === 'cargando' ? ' loading' :
+    (estado === 'sin_periodo' || estado === 'invalido' || estado === 'error_conexion') ? ' error' : ''
+  );
+  label.textContent = estado === 'ok' ? 'Fuente: Base de informes ✓' : 'Fuente: Base de informes';
+  msg.textContent = mensajes[estado] || '';
+
+  if(indicator){
+    indicator.title = (estado === 'ok' && detalle)
+      ? `Última actualización: ${detalle.fechaTexto || ''}\nArchivo: ${detalle.fileName || ''}`
+      : '';
+  }
+}
+
+// Entre los archivos disponibles, elige el correspondiente al período pedido.
+// Si ningún archivo trae período detectable en el nombre (caso actual: un
+// solo archivo consolidado), se usa el más reciente de la carpeta y el
+// selector de mes sigue actuando como filtro sobre los datos ya cargados,
+// igual que hoy. Cuando sí hay períodos detectables, se filtra por el
+// pedido y, entre los que coincidan, gana el de fecha de modificación más
+// reciente (nunca el de mayor sufijo de versión en el nombre).
+function elegirArchivoParaPeriodo(archivos, periodoBuscado){
+  const conPeriodo = archivos.filter(a => a.periodo);
+  let candidatos;
+  if(conPeriodo.length === 0) candidatos = archivos;
+  else if(periodoBuscado && periodoBuscado !== 'Todos') candidatos = conPeriodo.filter(a => a.periodo === periodoBuscado);
+  else candidatos = conPeriodo;
+  if(!candidatos.length) return null;
+  return candidatos.reduce((mejor, actual) =>
+    new Date(actual.lastUpdated) > new Date(mejor.lastUpdated) ? actual : mejor
+  );
+}
+
+async function cargarDesdeGoogleDrive(periodoSolicitado){
+  if(!driveDisponible()) return; // Sin configurar: no interfiere con el flujo manual existente.
+
+  // 'Todos' no es un mes real (es el valor "sin filtro" del selector): en ese
+  // caso el mensaje de "sin período" no debe intentar convertirlo a etiqueta.
+  const mesLegible = (periodoSolicitado && periodoSolicitado !== 'Todos') ? monthLabel(periodoSolicitado) : '';
+
+  setEstadoFuente('cargando');
+  try{
+    periodosDisponibles = await driveListFiles();
+    if(!periodosDisponibles.length){
+      setEstadoFuente('sin_periodo', { mesLabel: mesLegible });
+      return;
+    }
+
+    const elegido = elegirArchivoParaPeriodo(periodosDisponibles, periodoSolicitado);
+    if(!elegido){
+      setEstadoFuente('sin_periodo', { mesLabel: mesLegible });
+      return;
+    }
+
+    // Si ya tenemos cargada exactamente esta versión de este archivo, no hace
+    // falta volver a descargar ni reprocesar (evita parpadeo al cambiar de
+    // mes cuando en realidad todos los meses viven en el mismo archivo).
+    if(ultimoWorkbookValido && ultimoWorkbookValido.fileId === elegido.id && ultimoWorkbookValido.lastUpdated === elegido.lastUpdated){
+      setEstadoFuente('ok', { fileName: ultimoWorkbookValido.fileName, fechaTexto: new Date(elegido.lastUpdated).toLocaleString('es-CO') });
+      return;
+    }
+
+    const archivo = await driveGetFile(elegido.id);
+    const buffer = base64ToArrayBuffer(archivo.base64);
+    const wbTest = XLSX.read(new Uint8Array(buffer), { type:'array', cellDates:true });
+
+    const chequeo = validarWorkbook(wbTest);
+    if(!chequeo.valido){
+      console.error('Workbook de Drive inválido:', chequeo.razon);
+      setEstadoFuente('invalido');
+      return; // No se toca ultimoWorkbookValido: el dashboard conserva la última versión buena.
+    }
+
+    // Solo si pasa validación se procesa y se reemplaza el último workbook bueno.
+    await procesarWorkbookBuffer(buffer, archivo.fileName);
+    ultimoWorkbookValido = { fileId: elegido.id, fileName: archivo.fileName, lastUpdated: elegido.lastUpdated };
+    setEstadoFuente('ok', { fileName: archivo.fileName, fechaTexto: new Date(archivo.lastUpdated).toLocaleString('es-CO') });
+  } catch(err){
+    console.error(err);
+    // Nunca se destruye ni se pone en cero el dashboard: la última versión
+    // válida (de Drive o incluso cargada manualmente) permanece intacta.
+    setEstadoFuente('error_conexion');
+  }
+}
+
+// Hook aditivo sobre el cambio de mes: además del filtrado normal (que ya
+// dispara el listener de mesFilter de más arriba, sin tocarlo), si la fuente
+// automática está activa intenta traer el archivo específico de ese período.
+function alCambiarMesConDrive(mesSeleccionado){
+  if(!driveDisponible()) return;
+  cargarDesdeGoogleDrive(mesSeleccionado);
+}
+document.getElementById('mesFilter').addEventListener('change', e => alCambiarMesConDrive(e.target.value));
+
+// Botón "Actualizar datos": vuelve a consultar Drive manualmente para el mes actual.
+const btnActualizar = document.getElementById('btnActualizar');
+if(btnActualizar){
+  btnActualizar.addEventListener('click', () => cargarDesdeGoogleDrive(filtroMes));
+}
+
+// Toggle de "Carga manual de emergencia": el <label id="fileBtnLabel"> original
+// (con su <input type=file> y su listener) queda intacto; esto solo lo muestra/oculta.
+const btnToggleManual = document.getElementById('btnToggleManual');
+const fileBtnLabel = document.getElementById('fileBtnLabel');
+if(btnToggleManual && fileBtnLabel){
+  btnToggleManual.addEventListener('click', () => {
+    fileBtnLabel.hidden = !fileBtnLabel.hidden;
+  });
+}
+
+function iniciarApp(){
+  if(driveDisponible()){
+    document.getElementById('fuenteIndicator')?.removeAttribute('hidden');
+    document.getElementById('btnActualizar')?.removeAttribute('hidden');
+    document.getElementById('btnToggleManual')?.removeAttribute('hidden');
+    if(fileBtnLabel) fileBtnLabel.hidden = true;
+    cargarDesdeGoogleDrive('Todos');
+  }
+  // Si Drive no está configurado, no se toca nada: mismo comportamiento de
+  // hoy, a la espera de la carga manual del XLSX ("Sube el archivo...").
+}
 
 /* ============ Estilos / temas ============ */
 const THEME_KEY = 'cp_dashboard_theme_v1';
@@ -482,6 +721,7 @@ document.getElementById('themeModal').addEventListener('click', (e)=>{
   if(e.target.id==='themeModal') document.getElementById('themeModal').classList.add('hidden');
 });
 applyTheme(getSavedTheme());
+iniciarApp();
 document.getElementById('tabs').addEventListener('click', e=>{
   const t = e.target.closest('.tab'); if(!t) return;
   activeTab = t.dataset.tab;
